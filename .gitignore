@@ -5,5 +5,5 @@ thumbs.db
 Thumbs.db
 /node_modules
 *~
-*.js
+/*.js
 npm-debug.log
