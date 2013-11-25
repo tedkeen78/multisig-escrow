@@ -10,7 +10,7 @@ You are not involved in any transactions.
 {% else %}
   <ul class="transactions">
   {% for transaction in transactions %}
-    <li><a href="{{ approot }}transactions/{{ transaction.uuid }}">
+    <li><a href="{{ approot() }}/transactions/{{ transaction.uuid }}">
     {{ transaction.uuid }}: {{ transaction.title }}</a><br>
     <time datetime="{{ transaction.time_made|date('c') }}">{{ transaction.time_made|date('d M Y') }}</time>
     -
@@ -30,6 +30,6 @@ You are not involved in any transactions.
 {% endif %}
 
 <p>
-<a href="{{ approot }}newtransaction">New Transaction</a>
+<a href="{{ approot() }}/newtransaction">New Transaction</a>
 
 {% endblock %}

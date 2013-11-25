@@ -3,7 +3,7 @@
 {% block title %}Account{% endblock %}
 
 {% block head -%}
-<script src="{{ approot }}static/jquery.js"></script>
+<script src="{{ approot() }}/static/jquery.js"></script>
 <script src="https://login.persona.org/include.js"></script>
 <script type="text/javascript">
 var personaUser = "{{ personaUser|escape('js') }}" || null;
@@ -13,7 +13,7 @@ navigator.id.watch({
   onlogin: function(assertion) {
     $.ajax({
       type: 'POST',
-      url: approot+'persona/verify',
+      url: approot+'/persona/verify',
       data: {assertion: assertion, _csrf: _csrf},
       success: function(res, status, xhr) {
         window.location.reload();
@@ -28,7 +28,7 @@ navigator.id.watch({
     console.log("Logout");
     $.ajax({
       type: 'POST',
-      url: approot+'persona/logout',
+      url: approot+'/persona/logout',
       data: {_csrf: _csrf},
       success: function(res, status, xhr) {
         window.location.reload();
@@ -76,14 +76,14 @@ Using it to secure your account is recommended.
 {% if user.otpenabled %}
 <p>
 Two-factor authentication for your account is currently <strong>enabled</strong>.<br>
-<form class="disableotpform" method="POST" action="{{ approot }}account/disableotp">
+<form class="disableotpform" method="POST" action="{{ approot() }}/account/disableotp">
 <input type="hidden" name="_csrf" value="{{ _csrf() }}">
 <input type="submit" value="Disable OTP">
 </form>
 {% else %}
 <p>
 Two-factor authentication for your account is currently <strong>disabled</strong>.<br>
-<form class="enableotpform" method="POST" action="{{ approot }}account/enableotp">
+<form class="enableotpform" method="POST" action="{{ approot() }}/account/enableotp">
 <input type="hidden" name="_csrf" value="{{ _csrf() }}">
 <input type="submit" value="Enable OTP">
 </form>
@@ -102,7 +102,7 @@ Two-factor authentication for your account is currently <strong>disabled</strong
     {% endif %}
     to reset your account.
 
-<form class="otpform" method="POST" action="{{ approot }}account/otp">
+<form class="otpform" method="POST" action="{{ approot() }}/account/otp">
 <input type="hidden" name="_csrf" value="{{ _csrf() }}">
 <label>2FA Password: <input type="number" name="otpcode" autocomplete="off"><label>
 <input type="submit" value="Submit">
@@ -116,7 +116,7 @@ Two-factor authentication for your account is currently <strong>disabled</strong
   {% else %}
     You are not logged in!
   {% endif %}
-<p><a id="signin" href="javascript:;"><img src="{{ approot }}static/plain_sign_in_blue.png" alt="Sign in"></a>
+<p><a id="signin" href="javascript:;"><img src="{{ approot() }}/static/plain_sign_in_blue.png" alt="Sign in"></a>
 
 <p class="aboutpersona">
 This site uses <a href="https://login.persona.org/about">Mozilla Persona</a> for handling signing in.

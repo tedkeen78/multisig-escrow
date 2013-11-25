@@ -18,7 +18,7 @@ Key: <pre>{{ otpkey }}</pre>
 </a>
 
 <p>
-<form class="confirm otpform" method="POST" action="{{ approot }}account/confirmotp">
+<form class="confirm otpform" method="POST" action="{{ approot() }}/account/confirmotp">
 <input type="hidden" name="_csrf" value="{{ _csrf() }}">
 <label>2FA Password: <input type="number" name="otpcode" autocomplete="off"><label>
 <input type="submit" value="Confirm">

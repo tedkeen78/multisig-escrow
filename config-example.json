@@ -1,7 +1,7 @@
 {
   "secret": "REPLACE WITH RANDOM SECRET",
   "audience": "http://localhost:4000",
-  "approot": "/",
+  "subdir": "",
   "trust_proxy": false,
   "ga": {
     "ua": false,

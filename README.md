@@ -25,9 +25,9 @@ Copy "config-example.json" to "config.json" and then customize its values.
 * `audience` must be set to the domain that the web app is accessed by and must
   have the protocol and port number. This is used by Persona.
 
-* `approot` must be set to the path the web app is accessed by. This must be
-  changed if you're hosting this app under a subdirectory by an nginx proxy
-  redirect for example.
+* `subdir` can sett to the path the web app is accessed by. This can
+  be used if you're hosting this app under a subdirectory by an nginx
+  proxy redirect for example.
 
 * `trust_proxy` can be set to true to trust "X-Forwarded-Proto",
   "X-Forwarded-Host", and "X-Forwarded-For" headers. This is an Express

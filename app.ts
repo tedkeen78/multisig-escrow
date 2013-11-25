@@ -28,10 +28,10 @@ nconf
   .defaults({
     secret: "unset",
     audience: "http://localhost:4000",
-    approot: "/",
     sitetitle: "Multisig Escrow Manager",
     transfee: 50000,
     trust_proxy: false,
+    subdir: "",
     session: {
       key: "msm_session"
     },
@@ -188,7 +188,7 @@ app.set('view engine', 'html');
 app.set('views', __dirname + '/views');
 
 app.locals({
-  approot: nconf.get('approot'),
+  approot: app.path.bind(app),
   sitetitle: nconf.get('sitetitle'),
   transfee: nconf.get('transfee'),
   SATOSHI: SATOSHI,
@@ -763,17 +763,24 @@ function databaseCleanup() {
 /* Startup */
 
 if (nconf.get('listen:enabled')) {
+  var listenApp = app;
+  
+  if (nconf.get("subdir")) {
+    listenApp = express();
+    listenApp.use(nconf.get("subdir"), app);
+  }
+  
   var socket: string = nconf.get('listen:socket');
   var port: number = nconf.get('listen:port');
   var host: string = nconf.get('listen:host');
   
   if (!socket) {
-    app.listen(port, host, function() {
+    listenApp.listen(port, host, function() {
       console.log("Now listening on "+host+":"+port);
     });
   } else {
     fs.unlink(socket, function(err) {
-      app.listen(socket, function() {
+      listenApp.listen(socket, function() {
         fs.chmod(socket, 0766);
         console.log("Now listening on "+socket);
       });

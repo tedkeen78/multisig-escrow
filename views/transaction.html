@@ -19,7 +19,7 @@
   {% if player.address %}
     BTC Address: {{ player.address }}<br>
   {% elif player.role !== 'Arbitrator' && not transaction.time_canceled && not transaction.time_started %}
-    <form class="setaddressform" action="{{ approot }}transactions/{{ transaction.uuid }}/setaddress" method="POST">
+    <form class="setaddressform" action="{{ approot() }}/transactions/{{ transaction.uuid }}/setaddress" method="POST">
     <label>BTC Address <input type="text" class="btcaddress" name="btcaddress"></label>
     <input type="submit" value="Set">
     <input type="hidden" name="role" value="{{ player.role|lower }}">
@@ -29,10 +29,10 @@
   {% if transaction.readyForAgree && not transaction.time_started && user.email === player.email %}
   {% if player.address || player.role === 'Arbitrator' %}
     {% if not player.agreed %}
-      <form class="agreeform" action="{{ approot }}transactions/{{ transaction.uuid }}/agree" method="POST">
+      <form class="agreeform" action="{{ approot() }}/transactions/{{ transaction.uuid }}/agree" method="POST">
       <input type="submit" value="Agree">
     {% else %}
-      <form class="agreeform" action="{{ approot }}transactions/{{ transaction.uuid }}/cancel" method="POST">
+      <form class="agreeform" action="{{ approot() }}/transactions/{{ transaction.uuid }}/cancel" method="POST">
       <input type="submit" value="Undo Agreement"> (available only until everyone agrees)
     {% endif %}
     <input type="hidden" name="role" value="{{ player.role|lower }}">
@@ -42,7 +42,7 @@
   {% endif %}
 {% else %}
   <em>not set yet</em><br>
-  <a rel="nofollow" class="invitelink" href="{{ approot }}transactions/{{ transaction.uuid }}/join/{{ player.role|lower }}/{{ invid(player.role|lower) }}">Invitation link</a>
+  <a rel="nofollow" class="invitelink" href="{{ approot() }}/transactions/{{ transaction.uuid }}/join/{{ player.role|lower }}/{{ invid(player.role|lower) }}">Invitation link</a>
 {% endif %}
 {% endfor %}
 </ul>
@@ -62,7 +62,7 @@
 
   <p>
   The transaction can be entirely canceled before it's finalized.
-  <form class="agreeform" action="{{ approot }}transactions/{{ transaction.uuid }}/void" method="POST">
+  <form class="agreeform" action="{{ approot() }}/transactions/{{ transaction.uuid }}/void" method="POST">
   <input type="submit" value="Cancel Transaction">
   <input type="hidden" name="_csrf" value="{{ _csrf() }}">
   </form>
@@ -123,7 +123,7 @@ No comments yet.
 {% endfor %}
 {% endif %}
 
-<form class="commentform" action="{{ approot }}transactions/{{ transaction.uuid }}/newcomment" method="POST">
+<form class="commentform" action="{{ approot() }}/transactions/{{ transaction.uuid }}/newcomment" method="POST">
 Post a comment
 
 <p><label>Text<br>

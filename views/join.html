@@ -8,7 +8,7 @@ You've been invited to act as the {{ role }} in the transaction titled "{{ trans
 
 <p>
 {% if not user %}
-  You must <a href="{{ approot }}account">sign in</a> and then return to this page to accept this invitation.
+  You must <a href="{{ approot() }}/account">sign in</a> and then return to this page to accept this invitation.
 {% else %}
   <form class="joinform" method="POST">
   <input type="submit" name="join" value="Join">
