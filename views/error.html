@@ -1,0 +1,16 @@
+{% extends 'layout.html' %}
+
+{% block title %}Error{% endblock %}
+
+{% block content %}
+<div class="error">{{ error }}</div>
+
+<p>
+<a href="javascript:history.back();">Go back</a>
+
+{% if admin.email %}
+<p>
+If you're having issues with the site, please email the <a href="mailto:{{admin.email}}">admin</a>.
+</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,9 @@
+/config.json
+/*.db
+.DS_Store
+thumbs.db
+Thumbs.db
+/node_modules
+*~
+*.js
+npm-debug.log

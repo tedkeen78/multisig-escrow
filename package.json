@@ -1,0 +1,34 @@
+{
+  "name": "multisig-escrow",
+  "version": "0.0.1",
+  "private": true,
+  "keywords": ["bitcoin"],
+  "dependencies": {
+    "express": "3.x",
+    "redis": "*",
+    "connect-redis": "*",
+    "connect-sqlite3": "git+https://github.com/AgentME/connect-sqlite3.git",
+    "swig": "1.1.0",
+    "sqlite3": "^2.1.19",
+    "toobusy": "*",
+    "marked": "^0.2.10",
+    "uuid": "*",
+    "express-persona": "*",
+    "thirty-two": "*",
+    "qrcode-npm": "*",
+    "notp": "*",
+    "nconf": "^0.6.8"
+  },
+  "scripts": {
+    "prepublish": "./node_modules/.bin/tsc -m commonjs app.ts",
+    "start": "node app.js"
+  },
+  "devDependencies": {
+    "typescript": ">=0.9.1"
+  },
+  "licenses": [
+    {
+      "type": "MIT"
+    }
+  ]
+}

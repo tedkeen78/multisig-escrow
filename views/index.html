@@ -1,0 +1,26 @@
+{% extends 'layout.html' %}
+
+{% block fulltitle %}{{ sitetitle }}{% endblock %}
+
+{% block contenttitle %}{% endblock %}
+
+{% block content %}
+
+<p>
+Welcome to the Multisig Escrow Manager! This web app assists with escrow
+transactions.
+
+<p>
+Escrow is a convention to help buyers and sellers. A buyer wants to be able to
+get his money back if the seller does not send the item. The seller does not want to send his item until his payment is guaranteed. Escrow is where the buyer and seller agree on a person they both trust to act as an abritrator to the deal. The buyer gives the abitrator his payment, the arbitrator tells the seller that he has the payment, the seller sends his item to the buyer, and then the arbitrator sends the payment on to the seller, or back to the buyer if he determines that the seller did not follow through.
+
+<p>
+The potential issue with the above solution is that the arbitrator could choose to run away with the money after receiving it from the buyer, and never send it to the buyer or seller. Bitcoin allows for a special type of transaction called a multisignature transaction that rquires the agreement of multiple people to be valid, which can be used to prevent this possibility.
+
+<p>
+This site is a tool to enable buyers, sellers, and arbitrators to participate in secure multisig escrow transactions. You never have to give control of any bitcoins to this web app. A user can create an escrow transaction with a description at this site, choose their role as Buyer, Seller, or Arbitrator, invite other people to fill the other roles, leave comments about the transaction visible to the other participants, and view instructions on how to manage the multisig transaction in context of the escrow situation.
+
+<p>
+This site is based on the Multisig Escrow Manager project hosted at (todo: github page site here). <strong>This project is still under development. The interfaces for users to create and join escrow transactions on the site is functional, but the multisig/bitcoin functionality is not in yet. Feel free to experiment with what's here and give feedback.</strong>
+
+{% endblock %}

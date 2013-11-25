@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<title>{%- block headtitle -%}
+{% block title %}Unknown page{% endblock %} • {{ sitetitle }}
+{%- endblock -%}</title>
+<link rel="shortcut icon" href="{{ approot }}static/icon.png">
+<link rel="stylesheet" href="{{ approot }}static/main.css">
+{% include "ga.html" -%}
+<script type="text/javascript">
+var approot = "{{ approot|escape('js') }}";
+var _csrf = "{{ _csrf()|escape('js') }}";
+</script>
+{% block head %}{% endblock -%}
+</head>
+<body>
+
+<div id="pagemain">
+
+<div class="extrabuttons">
+{% if user -%}
+<a href="{{ approot }}account">Account</a>
+<a href="{{ approot }}transactions">Transactions</a>
+{% else -%}
+<a href="{{ approot }}account">Log In</a>
+{% endif -%}
+</div>
+
+<header>
+<h1><a class="mainlink" href="{{ approot }}">{{ sitetitle }}</a></h1>
+ALPHA VERSION
+</header>
+
+<div class="contentmain">
+{% block contenttitle -%}
+<h1>{% block title %}Unknown page{% endblock %}</h1>
+{%- endblock %}
+
+{% if flash %}
+<p class="flash">{{ flash }}</p>
+{% endif %}
+
+{% block content %}Unknown content{% endblock %}
+</div>
+
+</div>
+
+</body>
+</html>

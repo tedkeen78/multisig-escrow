@@ -1,0 +1,139 @@
+{% extends 'layout.html' %}
+
+{% block title %}Transaction: {{ transaction.title }}{% endblock %}
+
+{% block content -%}
+<ul class="transactionplayers">
+{% for player in transaction.players %}
+<li>{{ player.role }}:
+{% if player.email %}
+  {% if user.email == player.email %}
+    <em>(You)</em>
+  {% endif %}
+  <a href="mailto:{{ player.email }}">
+  {{ player.email }}</a>
+  {% if transaction.readyForAgree && not player.agreed %}
+    <em>has not agreed yet</em>
+  {% endif %}
+  <br>
+  {% if player.address %}
+    BTC Address: {{ player.address }}<br>
+  {% elif player.role !== 'Arbitrator' && not transaction.time_canceled && not transaction.time_started %}
+    <form class="setaddressform" action="{{ approot }}transactions/{{ transaction.uuid }}/setaddress" method="POST">
+    <label>BTC Address <input type="text" class="btcaddress" name="btcaddress"></label>
+    <input type="submit" value="Set">
+    <input type="hidden" name="role" value="{{ player.role|lower }}">
+    <input type="hidden" name="_csrf" value="{{ _csrf() }}">
+    </form>
+  {% endif %}
+  {% if transaction.readyForAgree && not transaction.time_started && user.email === player.email %}
+  {% if player.address || player.role === 'Arbitrator' %}
+    {% if not player.agreed %}
+      <form class="agreeform" action="{{ approot }}transactions/{{ transaction.uuid }}/agree" method="POST">
+      <input type="submit" value="Agree">
+    {% else %}
+      <form class="agreeform" action="{{ approot }}transactions/{{ transaction.uuid }}/cancel" method="POST">
+      <input type="submit" value="Undo Agreement"> (available only until everyone agrees)
+    {% endif %}
+    <input type="hidden" name="role" value="{{ player.role|lower }}">
+    <input type="hidden" name="_csrf" value="{{ _csrf() }}">
+    </form>
+  {% endif %}
+  {% endif %}
+{% else %}
+  <em>not set yet</em><br>
+  <a rel="nofollow" class="invitelink" href="{{ approot }}transactions/{{ transaction.uuid }}/join/{{ player.role|lower }}/{{ invid(player.role|lower) }}">Invitation link</a>
+{% endif %}
+{% endfor %}
+</ul>
+
+<div class="transactionstatus">
+<h2>Status</h2>
+<p>
+{% if transaction.time_canceled %}
+  Transaction was canceled on
+  <time datetime="{{ transaction.time_canceled|date('c') }}">{{ transaction.time_canceled|date('d M Y') }}</time>.
+{% elif not transaction.time_started %}
+  {% if not transaction.readyForAgree %}
+    Transaction is still gathering participants.
+  {% else %}
+    Transaction not yet agreed to. All three participants must agree to the transaction first.
+  {% endif %}
+
+  <p>
+  The transaction can be entirely canceled before it's finalized.
+  <form class="agreeform" action="{{ approot }}transactions/{{ transaction.uuid }}/void" method="POST">
+  <input type="submit" value="Cancel Transaction">
+  <input type="hidden" name="_csrf" value="{{ _csrf() }}">
+  </form>
+
+{% else %}
+  Transaction was agreed to on 
+  <time datetime="{{ transaction.time_started|date('c') }}">{{ transaction.time_started|date('d M Y') }}</time>.<br>
+  {% if not transaction.time_complete %}
+    Transaction is ongoing.
+  {% else %}
+    Transaction was completed on
+    <time datetime="{{ transaction.time_complete|date('c') }}">{{ transaction.time_complete|date('d M Y') }}</time>.
+  {% endif %}
+{% endif %}
+</div>
+
+<div class="transactiontextwrapper">
+<h2>User Description</h2>
+<div class="transactiontext">
+{{ transaction.text_rendered|raw }}
+</div>
+</div>
+
+<div class="bitcoinstuff">
+<h2>Details</h2>
+Payment: {{ transaction.payment / SATOSHI }} BTC<br>
+Arbitrator Fee: {{ transaction.arb_fee }}% ({{ transaction.payment*(transaction.arb_fee/100)/SATOSHI }} BTC)<br>
+Transaction Time: {% if transaction.timelength %}{{ transaction.timelength }} days{% else %}Indefinite{% endif %}
+{% if transaction.timelength_end %}
+  (<time datetime="{{ transaction.timelength_end|date('c') }}">{{ transaction.timelength_end|date('d M Y') }}</time>)
+{% endif %}
+
+<p><em>under construction</em><br>
+<small>This section will contain the multisig address and various unsigned raw transactions (in hexadecimal form) that can be used by any two participants to finalize the transaction. When a participant has signed a transaction, if still needs more signatures, then they can update this page with it here. Instructions on how to sign the transactions with clients such as Bitcoin-Qt be included.</small>
+</div>
+
+<div class="transactioncomments">
+{% if not transaction.comments %}
+No comments yet.
+{% else %}
+<h2>Comments</h2>
+{% for comment in transaction.comments %}
+<div class="transactioncomment">
+<div class="posterinfo">
+<span class="posterrole">
+{% if comment.user_email == transaction.buyer_email %}B{% endif -%}
+{% if comment.user_email == transaction.seller_email %}S{% endif -%}
+{% if comment.user_email == transaction.arbitrator_email %}A{% endif -%}
+</span>
+<span class="postername">{{ comment.user_email }}</span>
+<time datetime="{{ comment.time|date('c') }}">{{ comment.time|date('d M Y') }}</time>
+<span class="postno">#{{ comment.commentnum }}</span>
+</div>
+<div class="postbody">
+{{ comment.text_rendered|raw }}
+</div>
+</div>
+{% endfor %}
+{% endif %}
+
+<form class="commentform" action="{{ approot }}transactions/{{ transaction.uuid }}/newcomment" method="POST">
+Post a comment
+
+<p><label>Text<br>
+<small>Supports <a href="https://help.github.com/articles/github-flavored-markdown">GitHub Flavored Markdown</a></small><br>
+<textarea name="text"></textarea><br>
+<label>
+<input type="hidden" name="_csrf" value="{{ _csrf() }}">
+<input type="submit" value="Post">
+</form>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,34 @@
+{
+  "secret": "REPLACE WITH RANDOM SECRET",
+  "audience": "http://localhost:4000",
+  "approot": "/",
+  "trust_proxy": false,
+  "ga": {
+    "ua": false,
+    "domain": false
+  },
+  "listen": {
+    "socket": false,
+    "host": "localhost",
+    "port": 4000
+  },
+  "redis": {
+    "main": {
+      "enabled": false,
+      "socket": false,
+      "port": 1234,
+      "pass": "blah",
+      "db": 0
+    },
+    "cache": {
+      "enabled": false,
+      "socket": false,
+      "port": 1235,
+      "pass": "blah",
+      "db": 0
+    }
+  },
+  "admin": {
+    "email": "example@example.com"
+  }
+}

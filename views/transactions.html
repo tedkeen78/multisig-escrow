@@ -1,0 +1,35 @@
+{% extends 'layout.html' %}
+
+{% block title %}Transactions{% endblock %}
+
+{% block content -%}
+
+{% if not transactions %}
+<p>
+You are not involved in any transactions.
+{% else %}
+  <ul class="transactions">
+  {% for transaction in transactions %}
+    <li><a href="{{ approot }}transactions/{{ transaction.uuid }}">
+    {{ transaction.uuid }}: {{ transaction.title }}</a><br>
+    <time datetime="{{ transaction.time_made|date('c') }}">{{ transaction.time_made|date('d M Y') }}</time>
+    -
+    {% if transaction.time_canceled %}
+    Canceled
+    {% elif transaction.time_complete %}
+    Completed
+    {% elif transaction.time_started %}
+    Active
+    {% elif transaction.buyer && transaction.seller && transaction.arbitrator %}
+    Waiting to be agreed on
+    {% else %}
+    Still gathering participants
+    {% endif %}
+  {% endfor %}
+  </ul>
+{% endif %}
+
+<p>
+<a href="{{ approot }}newtransaction">New Transaction</a>
+
+{% endblock %}

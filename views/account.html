@@ -1,0 +1,127 @@
+{% extends 'layout.html' %}
+
+{% block title %}Account{% endblock %}
+
+{% block head -%}
+<script src="{{ approot }}static/jquery.js"></script>
+<script src="https://login.persona.org/include.js"></script>
+<script type="text/javascript">
+var personaUser = "{{ personaUser|escape('js') }}" || null;
+
+navigator.id.watch({
+  loggedInUser: personaUser,
+  onlogin: function(assertion) {
+    $.ajax({
+      type: 'POST',
+      url: approot+'persona/verify',
+      data: {assertion: assertion, _csrf: _csrf},
+      success: function(res, status, xhr) {
+        window.location.reload();
+      },
+      error: function(xhr, status, err) {
+        navigator.id.logout();
+        alert("Login failure: " + err);
+      }
+    });
+  },
+  onlogout: function() {
+    console.log("Logout");
+    $.ajax({
+      type: 'POST',
+      url: approot+'persona/logout',
+      data: {_csrf: _csrf},
+      success: function(res, status, xhr) {
+        window.location.reload();
+      },
+      error: function(xhr, status, err) {
+        alert("Logout failure: " + err);
+      }
+    });
+  }
+});
+
+$(document).ready(function() {
+  $("#signin").click(function() {
+    navigator.id.request();
+  });
+  $("#signout").click(function() {
+    navigator.id.logout();
+  });
+});
+</script>
+{%- endblock %}
+
+{% block content -%}
+
+<noscript>
+<p class="important error">Javascript is required for logging in. Javascript is not required after you are logged in.
+</noscript>
+
+<p>
+{% if personaUser %}
+  {% if user %}
+
+You are currently logged in as {{ user.email }}.
+
+{% if redirect %}
+<p class="loggedinredirect">Continue to <a href="{{ redirect }}">{{ redirect }}</a></p>
+{% endif %}
+
+<h2>Two-factor Authentication</h2>
+<p>
+This site supports one-time passwords compatible with
+<a href="https://code.google.com/p/google-authenticator/">Google Authenticator</a>.
+Using it to secure your account is recommended.
+
+{% if user.otpenabled %}
+<p>
+Two-factor authentication for your account is currently <strong>enabled</strong>.<br>
+<form class="disableotpform" method="POST" action="{{ approot }}account/disableotp">
+<input type="hidden" name="_csrf" value="{{ _csrf() }}">
+<input type="submit" value="Disable OTP">
+</form>
+{% else %}
+<p>
+Two-factor authentication for your account is currently <strong>disabled</strong>.<br>
+<form class="enableotpform" method="POST" action="{{ approot }}account/enableotp">
+<input type="hidden" name="_csrf" value="{{ _csrf() }}">
+<input type="submit" value="Enable OTP">
+</form>
+{% endif %}
+
+  {% else %}
+    You are identified as {{ personaUser }}. You must give your two-factor
+    one-time password for this site to continue logging in.
+
+    <p>
+    If you've lost your two-factor device and its key, then you must contact the
+    {% if admin.email %}
+      <a href="mailto:{{ admin.email }}">admin</a>
+    {% else %}
+      admin
+    {% endif %}
+    to reset your account.
+
+<form class="otpform" method="POST" action="{{ approot }}account/otp">
+<input type="hidden" name="_csrf" value="{{ _csrf() }}">
+<label>2FA Password: <input type="number" name="otpcode" autocomplete="off"><label>
+<input type="submit" value="Submit">
+</form>
+
+  {% endif %}
+  <p><a id="signout" href="javascript:;">Sign out</a>
+{% else %}
+  {% if redirect %}
+    You must be logged in to access "{{ redirect }}".
+  {% else %}
+    You are not logged in!
+  {% endif %}
+<p><a id="signin" href="javascript:;"><img src="{{ approot }}static/plain_sign_in_blue.png" alt="Sign in"></a>
+
+<p class="aboutpersona">
+This site uses <a href="https://login.persona.org/about">Mozilla Persona</a> for handling signing in.
+Only your email address is shared with this site when you sign in.
+
+{% endif %}
+
+{% endblock %}

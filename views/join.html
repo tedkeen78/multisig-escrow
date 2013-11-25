@@ -1,0 +1,18 @@
+{% extends 'layout.html' %}
+
+{% block title %}Join Transaction{% endblock %}
+
+{% block content %}
+<p>
+You've been invited to act as the {{ role }} in the transaction titled "{{ transaction.title }}".
+
+<p>
+{% if not user %}
+  You must <a href="{{ approot }}account">sign in</a> and then return to this page to accept this invitation.
+{% else %}
+  <form class="joinform" method="POST">
+  <input type="submit" name="join" value="Join">
+  <input type="hidden" name="_csrf" value="{{ _csrf() }}">
+  </form>
+{% endif %}
+{% endblock %}

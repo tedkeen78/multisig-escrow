@@ -1,0 +1,27 @@
+{% extends 'layout.html' %}
+
+{% block title %}Enable OTP{% endblock %}
+
+{% block content -%}
+<p>
+Please enter this key or scan the QR code into your device, and then enter
+the password your device gives you to continue. If you lose your device and
+this key, then you will have to contact the admin of this site to manually
+disable two-factor authentication from your account.
+
+<p>
+Key: <pre>{{ otpkey }}</pre>
+
+<p>
+<a href="{{ otpkeyuri }}">
+{{ otpkeyqr_raw|raw }}
+</a>
+
+<p>
+<form class="confirm otpform" method="POST" action="{{ approot }}account/confirmotp">
+<input type="hidden" name="_csrf" value="{{ _csrf() }}">
+<label>2FA Password: <input type="number" name="otpcode" autocomplete="off"><label>
+<input type="submit" value="Confirm">
+</form>
+
+{% endblock %}

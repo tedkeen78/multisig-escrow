@@ -1,0 +1,16 @@
+{% extends 'layout.html' %}
+
+{% block title %}Confirmation{% endblock %}
+
+{% block content %}
+<p>
+{{ text }}
+
+{% if continue %}
+<p>
+<a href="{{ continue.href }}">Continue to {{ continue.title }}</a>
+{% endif %}
+
+<p>
+<a href="{{ approot }}">Return to the front page</a>
+{% endblock %}

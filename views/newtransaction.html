@@ -1,0 +1,50 @@
+{% extends 'layout.html' %}
+
+{% block title %}New Transaction{% endblock %}
+
+{% block content %}
+
+<p>
+These parameters can not be changed once set. (You are able to cancel the
+transaction before people agree to it and make a new one if necessary.)
+Once you create the transaction, you can invite people to it.
+
+<p>
+<form class="newform" method="POST">
+<label>Title<br>
+<input type="text" name="title" value="{{ title }}"></label>
+
+<p>
+<label>Description<br>
+<small>Supports <a href="https://help.github.com/articles/github-flavored-markdown">GitHub Flavored Markdown</a></small><br>
+<textarea name="text"></textarea></label>
+
+<p>
+Your Role<br>
+<select name="role">
+  <option value="buyer">Buyer</option>
+  <option value="seller">Seller</option>
+  <option value="arbitrator">Arbitrator</option>
+</select>
+
+<p>
+<label>Payment (BTC)<br>
+<small>The amount that the seller would receive in case of no dispute. The buyer must make sure to send at least {{ transfee / SATOSHI }} BTC more than this to cover transaction fees for sending to and from the multisig address.</small><br>
+<input type="number" name="payment" value="0.1"></label>
+
+<p>
+<label>Arbitrator Fee (percent)<br>
+<small>The arbitrator can choose to keep this amount if he has to resolve a dispute. Note that this is unable to be enforced. By design, any two parties in the transaction can conspire to do anything with the funds. This app won't assist them with that though.</small><br>
+<input type="number" name="arb_fee" value="3"></label>
+
+<p>
+<label>Transaction Time (days)<br>
+<small>When the funds are sent to the multisig address and the escrow transaction begins, the site will create a failsafe transaction signed by the arbitrator's key sending the funds to the seller with the <a href="https://en.bitcoin.it/wiki/NLockTime">lock_time</a> set this many days in the future. This means that if no disputes are raised in this timeframe, but the buyer and arbitrator stop cooperating, then the seller can still claim the funds.</small><br>
+<input type="number" name="timelength" value="45"></label>
+
+<p>
+<input type="hidden" name="_csrf" value="{{ _csrf() }}">
+<input type="submit" name="create" value="Create">
+</form>
+
+{% endblock %}
