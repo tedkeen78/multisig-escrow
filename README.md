@@ -37,9 +37,10 @@ Copy "config-example.json" to "config.json" and then customize its values.
 
 * The `socket` values can be set to a path to a UNIX socket.
 
-* redis is optional. The redis:cache values are intended to refer to a
-  secondary redis daemon that does not persist its memory to disk, but it isn't
-  used yet.
+* redis is optionally used for sessions currently (sqlite will be
+  automatically be used as fallback). The redis:cache values are
+  intended to refer to a secondary redis daemon that does not persist
+  its memory to disk, but it isn't used yet.
 
 * `admin:email` is an address displayed on error pages if set.
 
