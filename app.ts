@@ -32,6 +32,9 @@ nconf
     sitetitle: "Multisig Escrow Manager",
     transfee: 50000,
     trust_proxy: false,
+    session: {
+      key: "msm_session"
+    },
     // google analytics
     ga: {
       ua: false,
@@ -131,7 +134,7 @@ if (!secret || secret == "unset" || secret == "REPLACE WITH RANDOM SECRET") {
   throw Error("secret is unset");
 }
 
-var sessionOptions = {secret: secret, store: null};
+var sessionOptions = {secret: secret, store: null, key: nconf.get('session:key'), proxy: nconf.get('trust_proxy')};
 
 if (nconf.get("redis:main:enabled")) {
   // pdb - persistent database
