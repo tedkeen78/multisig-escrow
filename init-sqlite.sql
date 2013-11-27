@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `email` TEXT UNIQUE NOT NULL,
   `otpenabled` BOOLEAN DEFAULT 0 NOT NULL,
   `otpkey` TEXT,
+  `emailoptout` BOOLEAN DEFAULT 0 NOT NULL,
   PRIMARY KEY (`id` ASC)
 );
 
