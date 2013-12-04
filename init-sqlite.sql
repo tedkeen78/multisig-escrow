@@ -8,6 +8,13 @@ CREATE TABLE IF NOT EXISTS `users` (
   `emailoptout` BOOLEAN DEFAULT 0 NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS `otpfailures` (
+  `user` INTEGER NOT NULL REFERENCES `users`(`id`) ON DELETE CASCADE,
+  `time` INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS `otpfailures_user_idx` ON `otpfailures`(`user`);
+CREATE INDEX IF NOT EXISTS `otpfailures_time_idx` ON `otpfailures`(`time`);
+
 CREATE TABLE IF NOT EXISTS `transactions` (
   `id` INTEGER PRIMARY KEY UNIQUE NOT NULL,
   `uuid` TEXT UNIQUE NOT NULL,

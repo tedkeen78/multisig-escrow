@@ -64,6 +64,10 @@ nconf
         db: 0
       }
     },
+    otplimits: {
+      tries: 3,
+      time: ONEDAY
+    },
     limits: {
       title: {
         maxchars: 128,
@@ -562,11 +566,33 @@ app.post('/account/otp', function(req, res, next) {
     return showError(req, res, 400, "Only semi-authenticated users can send a one-time password.");
   if (typeof req.body.otpcode !== 'string')
     return showError(req, res, 400, "Fields missing or invalid");
-  if (!notp.totp.verify(req.body.otpcode, req['unauthUser'].otpkey, {}))
-    return showError(req, res, 400, "Invalid password");
-  
-  req.session['authenticated'] = true;
-  res.redirect('account');
+
+  sdb.get('SELECT COUNT(*) AS `count` FROM otpfailures WHERE user = $id AND time > $time', {$id: req['unauthUser'].id, $time: Date.now() - nconf.get('otplimits:time')}, function(err, result) {
+    if (err)
+      return next(err);
+
+    if (result.count >= nconf.get('otplimits:tries')) {
+      delete req.session['email'];
+      return showError(req, res, 403, "Account is currently locked out for too many one-time password failures.");
+    }
+
+    if (!notp.totp.verify(req.body.otpcode, req['unauthUser'].otpkey, {})) {
+      sdb.run('INSERT INTO `otpfailures` (`user`, `time`) VALUES ($user, $time)', {$user: req['unauthUser'].id, $time: Date.now()}, function(err) {
+        if (err)
+          return next(err);
+        
+        if (result.count+1 >= nconf.get('otplimits:tries')) {
+          delete req.session['email'];
+          showError(req, res, 400, "Invalid password. Account locked out temporarily due to number of failures.");
+        } else {
+          showError(req, res, 400, "Invalid password");
+        }
+      });
+    } else {
+      req.session['authenticated'] = true;
+      res.redirect('account');
+    }
+  });
 });
 
 app.post('/account/disableotp', requireAccount, function(req, res, next) {
@@ -735,29 +761,38 @@ function databaseCleanupMiddleware(req: express.Request, res: express.Response, 
     databaseCleanup();
 }
 
+interface CleanupJob {
+  sql: string;
+  pars: any;
+}
+
 function databaseCleanup() {
-  databaseLastCleanupTime = Date.now();
+  var now = databaseLastCleanupTime = Date.now();
+
+  var jobs: CleanupJob[] = [
+    {sql:'DELETE FROM otpfailures WHERE time < ?', pars:[now-nconf.get('otplimits:time')]},
+    {sql:'DELETE FROM transactions WHERE time_canceled < ?', pars:[now-nconf.get('cleanup:transactions:canceled')]},
+    {sql:'DELETE FROM transactions WHERE time_started + IFNULL(timelength,0) * $oneday < $t AND time_fundsactive IS NULL AND buyer AND seller AND arbitrator', pars:{$oneday: ONEDAY, $t: now-nconf.get('cleanup:transactions:agreed')}},
+    {sql:'DELETE FROM transactions WHERE time_complete < ?', pars:[now-nconf.get('cleanup:transactions:complete')]}
+  ];
   
-  var changes = 0;
-  sdb.run('DELETE FROM transactions WHERE time_canceled < ?', [Date.now()-nconf.get('cleanup:transactions:canceled')], function(err) {
-    if (err)
-      console.error(err);
-    changes += this.changes;
-    
-    sdb.run('DELETE FROM transactions WHERE time_started + IFNULL(timelength,0) * $oneday < $t AND time_fundsactive IS NULL AND buyer AND seller AND arbitrator', {$oneday: ONEDAY, $t: Date.now()-nconf.get('cleanup:transactions:agreed')}, function(err) {
+  var totalChanges = 0;
+  cleanupRunner();
+  
+  function cleanupRunner() {
+    if (jobs.length == 0) {
+      console.log("Database cleanup total changes:", totalChanges);
+      return;
+    }
+    var job = jobs.shift();
+    sdb.run(job.sql, job.pars, function(err) {
       if (err)
         console.error(err);
-      changes += this.changes;
-      
-      sdb.run('DELETE FROM transactions WHERE time_complete < ?', [Date.now()-nconf.get('cleanup:transactions:complete')], function(err) {
-        if (err)
-          console.error(err);
-        changes += this.changes;
-        
-        console.log("Database cleanup total changes:", changes);
-      });
+      else
+        totalChanges += this.changes;
+      setTimeout(cleanupRunner, 100);
     });
-  });
+  }
 }
 
 /* Startup */
