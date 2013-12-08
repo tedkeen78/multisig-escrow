@@ -689,7 +689,7 @@ function makeUUIDandSecret(cb: (err: Error, nid: string, inv_secret: string)=>vo
 
 // TODO real validation
 function validateStandardBTCAddress(address: string, cb: (err: Error, valid: boolean)=>void) {
-  cb(null, !!/^1[1-9A-HJ-NP-Za-km-z]{33}$/.exec(address));
+  cb(null, !!/^1[1-9A-HJ-NP-Za-km-z]{26,33}$/.exec(address));
 }
 
 function markAgreement(req: express.Request, res: express.Response, next: Function, uuid: string, role: string, status: boolean) {
