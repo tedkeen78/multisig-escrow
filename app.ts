@@ -4,6 +4,7 @@
 import util = require('util');
 import fs = require('fs');
 import crypto = require('crypto');
+import cproc = require('child_process');
 import express = require('express');
 var swig = require('swig');
 var nconf = require('nconf');
@@ -62,6 +63,18 @@ nconf
         port: 6380,
         pass: '',
         db: 0
+      }
+    },
+    utilities: {
+      sx: {
+        enabled: true,
+        remote_enabled: false
+      },
+      bitcoind: {
+        enabled: true
+      },
+      blockchaininfo: {
+        enabled: true
       }
     },
     otplimits: {
@@ -176,6 +189,12 @@ var sdb = new sqlite3.Database(nconf.get('sqlite:filename'));
 // Run init-sqlite.sql. Note that only "--" comments are allowed, and they
 // must have nothing before them on the line besides whitespace.
 sdb.exec(fs.readFileSync('init-sqlite.sql', {encoding: 'utf8'}).replace(/^\s*--.*$/gm, ''));
+
+if (!nconf.get('utilities:blockchaininfo:enabled'))
+  throw new Error('Blockchain.info usage currently is required');
+
+if (!nconf.get('utilities:bitcoind:enabled') && !nconf.get('utilities:sx:enabled'))
+  throw new Error('bitcoind or sx must be enabled');
 
 var marked = require('marked');
 marked.setOptions({
@@ -687,9 +706,35 @@ function makeUUIDandSecret(cb: (err: Error, nid: string, inv_secret: string)=>vo
   });
 }
 
-// TODO real validation
 function validateStandardBTCAddress(address: string, cb: (err: Error, valid: boolean)=>void) {
-  cb(null, !!/^1[1-9A-HJ-NP-Za-km-z]{26,33}$/.exec(address));
+  if (!/^1[1-9A-HJ-NP-Za-km-z]{26,33}$/.exec(address))
+    return cb(null, false);
+
+  if (nconf.get('utilities:sx:enabled')) {
+    cproc.execFile('sx', ['validaddr', address], null, function(err, stdout, stderr) {
+      if (err) {
+        if (err['code'] == 1)
+          cb(null, false);
+        else
+          cb(err, null);
+      } else {
+        cb(null, true);
+      }
+    });
+  } else if (nconf.get('utilities:bitcoind:enabled')) {
+    cproc.execFile('bitcoind', ['validateaddress', address], null, function(err, stdout, stderr) {
+      if (err)
+        return cb(err, null);
+      try {
+        var result = JSON.parse(stdout);
+      } catch(e) {
+        return cb(e, null);
+      }
+      cb(null, !!result['isvalid']);
+    });
+  } else {
+    cb(new Error('sx or bitcoind must be enabled'), null);
+  }
 }
 
 function markAgreement(req: express.Request, res: express.Response, next: Function, uuid: string, role: string, status: boolean) {
