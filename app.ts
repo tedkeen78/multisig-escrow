@@ -193,8 +193,12 @@ sdb.exec(fs.readFileSync('init-sqlite.sql', {encoding: 'utf8'}).replace(/^\s*--.
 if (!nconf.get('utilities:blockchaininfo:enabled'))
   throw new Error('Blockchain.info usage currently is required');
 
-if (!nconf.get('utilities:bitcoind:enabled') && !nconf.get('utilities:sx:enabled'))
-  throw new Error('bitcoind or sx must be enabled');
+if (!nconf.get('utilities:sx:enabled')) {
+  if (!nconf.get('utilities:bitcoind:enabled'))
+    throw new Error('bitcoind or sx must be enabled');
+  
+  console.warn('Warning: sx is not enabled. Locally generated arbitrator keys will be stored in wallet.');
+}
 
 var marked = require('marked');
 marked.setOptions({
@@ -734,6 +738,46 @@ function validateStandardBTCAddress(address: string, cb: (err: Error, valid: boo
     });
   } else {
     cb(new Error('sx or bitcoind must be enabled'), null);
+  }
+}
+
+function createNewKey(cb: (err: Error, address: string, privkey: string)=>void) {
+  if (nconf.get('utilities:sx:enabled')) {
+    cproc.execFile('sx', ['newkey'], null, function(err, stdout, stderr) {
+      if (err)
+        return cb(err, null, null);
+      var privkey = stdout.trim();
+      var address = '';
+      
+      var sxaddr = cproc.spawn('sx', ['addr'], {stdio: ['pipe','pipe',process.stderr]});
+      sxaddr.stdout.setEncoding('utf8');
+      sxaddr.stdout.on('data', function(data) {
+        address += data;
+      });
+      sxaddr.on('close', function(code) {
+        if (code !== 0)
+          return cb(new Error('sx process exited with code '+code), null, null);
+        address = address.trim();
+        cb(null, address, privkey);
+      });
+      sxaddr.stdin.end(privkey, 'utf8');
+    });
+  } else if (nconf.get('utilities:bitcoind:enabled')) {
+    // Not recommended method.
+    // The key generated is added to bitcoind's wallet and not removed.
+    cproc.execFile('bitcoind', ['getnewaddress', 'arb'], null, function(err, stdout, stderr) {
+      if (err)
+        return cb(err, null, null);
+      var address = stdout.trim();
+      cproc.execFile('bitcoind', ['dumpprivkey', address], null, function(err, stdout, stderr) {
+        if (err)
+          return cb(err, null, null);
+        var privkey = stdout.trim();
+        cb(null, address, privkey);
+      });
+    });
+  } else {
+    cb(new Error('sx or bitcoind must be enabled'), null, null);
   }
 }
 
